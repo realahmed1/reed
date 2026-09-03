@@ -11,4 +11,3 @@ All notable changes to Reed will be recorded here using semantic versioning.
 - Offline WordNet clarification for selected English words and short phrases.
 - Secret-shaped input refusal and local-only preference storage.
 - Automated unit, integration, startup, and dependency-security checks.
-

@@ -1,6 +1,6 @@
 # Reed
 
-Reed is a private, Windows-first listening companion for students who want to hear course material while they keep working. Paste a passage into Reed Station—or copy text in another app and use the global shortcut—and Reed reads it aloud with local speech tools.
+Reed is a private, Windows-first listening companion for students who want to hear course material while they keep working. Paste a passage into Reed Station—or copy text in another app and use the global shortcut—and Reed reads it aloud with a selected system voice.
 
 ## What works today
 
@@ -47,6 +47,8 @@ npm audit --audit-level=high
 - No account, telemetry, remote API, or background screen capture exists in this version.
 - Preferences are stored locally; reading material is not written to disk by Reed.
 
+Reed itself has no upload service. Speech synthesis is provided by the selected operating-system voice, so users handling sensitive material should choose a voice installed for offline use.
+
 Clipboard text has no trustworthy source metadata, so Reed cannot prove that it did not come from a secure field. The secret-shape guard is a safeguard, not a replacement for user judgment: never copy passwords, recovery codes, financial data, or private credentials into Reed.
 
 ## Architecture
@@ -70,7 +72,7 @@ Test with 5–10 volunteers using real course readings. Ask only for consented t
 
 ## GitHub safeguards
 
-Every code commit must use Ismaila Ahmed’s verified GitHub identity. The included verification workflow has read-only repository permission: it can test and report issues, but cannot commit, merge, publish, or deploy. Dependabot **alerts** may be enabled, but automated version-update pull requests stay disabled so `@realahmed1` remains the sole code contributor.
+Every code commit must use Ismaila Ahmed’s verified GitHub identity. The included verification workflow has read-only repository permission: it can test and report issues, but cannot commit, merge, publish, or deploy. It repeats the full verification monthly and reports when dependency updates are available. Dependabot **alerts** may be enabled, but automated version-update pull requests stay disabled so `@realahmed1` remains the sole code contributor.
 
 ## Demo script
 

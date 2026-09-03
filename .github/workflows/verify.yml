@@ -22,4 +22,20 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run typecheck
       - run: npm test
+      - name: Install the Electron runtime for the startup check
+        run: node node_modules/electron/install.js
+      - run: npm run smoke
       - run: npm audit --audit-level=high
+
+  dependency-update-check:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Report dependencies with newer releases
+        run: npm outdated
