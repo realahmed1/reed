@@ -29,10 +29,8 @@ export function prepareClarificationTerm(value: string): ClarificationTermResult
     lookupTerm: displayTerm.toLowerCase().replace(/ /g, "_")
   };
 }
-
 /** Keeps the definition while dropping quoted examples that interrupt listening. */
 export function conciseDefinition(glossary: string): string {
   const definition = glossary.split(";")[0]?.trim() ?? "";
   return definition.replace(/^\([^)]*\)\s*/, "").trim();
 }
-

@@ -11,4 +11,3 @@ declare module "wordnet" {
   const wordnet: WordNet;
   export = wordnet;
 }
-

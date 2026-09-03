@@ -15,6 +15,7 @@ declare global {
         | { ok: true; displayTerm: string; definition: string; source: string }
         | { ok: false; message: string }
       >;
+      reportReady(): void;
       onCopiedText(listener: (result: TextInputResult) => void): () => void;
       onShortcutUnavailable(listener: () => void): () => void;
     };

@@ -13,4 +13,3 @@ await cp(sourceDirectory, outputDirectory, {
   recursive: true,
   filter: (source) => !source.endsWith(".ts") && !source.endsWith(".d.ts")
 });
-

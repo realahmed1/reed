@@ -2,7 +2,6 @@ export interface ReaderPreferences {
   voiceName: string;
   playbackRate: number;
 }
-
 export const DEFAULT_READER_PREFERENCES: ReaderPreferences = {
   voiceName: "",
   playbackRate: 1
@@ -24,4 +23,3 @@ export function normalizeReaderPreferences(value: unknown): ReaderPreferences {
 
   return { voiceName, playbackRate };
 }
-

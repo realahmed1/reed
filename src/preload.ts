@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld("reed", {
   getPreferences: (): Promise<ReaderPreferences> => ipcRenderer.invoke("settings:get"),
   savePreferences: (preferences: ReaderPreferences): Promise<{ ok: true; preferences: ReaderPreferences } | { ok: false; message: string }> => ipcRenderer.invoke("settings:save", preferences),
   lookupDefinition: (selectedValue: string): Promise<DefinitionResult> => ipcRenderer.invoke("clarify:lookup-definition", selectedValue),
+  reportReady: (): void => ipcRenderer.send("app:renderer-ready"),
   onCopiedText: (listener: CopiedTextListener): (() => void) => {
     const handler = (_event: Electron.IpcRendererEvent, result: TextInputResult) => listener(result);
     ipcRenderer.on("reader:copied-text", handler);

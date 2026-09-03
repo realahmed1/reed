@@ -4,11 +4,16 @@ import path from "node:path";
 import wordnet = require("wordnet");
 import { conciseDefinition, prepareClarificationTerm } from "./core/clarify";
 import { DEFAULT_READER_PREFERENCES, normalizeReaderPreferences, type ReaderPreferences } from "./core/preferences";
-import { prepareReaderText } from "./core/text";
+import { prepareCopiedText, prepareReaderText } from "./core/text";
 
 let mainWindow: BrowserWindow | null = null;
 let dictionaryInitialization: Promise<void> | null = null;
+let preferenceWriteQueue: Promise<void> = Promise.resolve();
 const isSmokeTest = process.env.REED_SMOKE_TEST === "1";
+
+if (isSmokeTest) {
+  app.disableHardwareAcceleration();
+}
 
 function isMainWindowSender(sender: Electron.WebContents): boolean {
   return mainWindow !== null && sender.id === mainWindow.webContents.id;
@@ -18,7 +23,7 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 980,
     height: 740,
-    minWidth: 720,
+    minWidth: 360,
     minHeight: 560,
     title: "Reed",
     backgroundColor: "#f7f8f5",
@@ -36,20 +41,15 @@ function createWindow(): void {
   void mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   mainWindow.webContents.on("will-navigate", (event) => event.preventDefault());
+  mainWindow.webContents.session.setPermissionCheckHandler(() => false);
   mainWindow.webContents.session.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
-  mainWindow.webContents.once("did-finish-load", () => {
-    if (isSmokeTest) {
-      console.info("REED_SMOKE_READY");
-      app.quit();
-    }
-  });
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
 
-async function readCopiedText(): Promise<ReturnType<typeof prepareReaderText>> {
-  return prepareReaderText(await clipboard.readText());
+function readCopiedText(): Promise<ReturnType<typeof prepareReaderText>> {
+  return prepareCopiedText(() => clipboard.readText());
 }
 
 function initializeDictionary(): Promise<void> {
@@ -71,11 +71,26 @@ async function loadPreferences(): Promise<ReaderPreferences> {
 
 async function savePreferences(value: unknown): Promise<ReaderPreferences> {
   const preferences = normalizeReaderPreferences(value);
-  await writeFile(preferencesPath(), JSON.stringify(preferences), { encoding: "utf8", mode: 0o600 });
+  const pendingWrite = preferenceWriteQueue
+    .catch(() => undefined)
+    .then(() => writeFile(preferencesPath(), JSON.stringify(preferences), { encoding: "utf8", mode: 0o600 }));
+  preferenceWriteQueue = pendingWrite;
+  await pendingWrite;
   return preferences;
 }
 
 app.whenReady().then(() => {
+  ipcMain.on("app:renderer-ready", (event) => {
+    if (!isMainWindowSender(event.sender)) {
+      return;
+    }
+
+    if (isSmokeTest) {
+      console.info("REED_SMOKE_READY");
+      app.quit();
+    }
+  });
+
   createWindow();
 
   ipcMain.handle("reader:request-copied-text", (event) => {
@@ -159,18 +174,11 @@ app.whenReady().then(() => {
   });
 
   const shortcutRegistered = globalShortcut.register("CommandOrControl+Shift+R", () => {
-    void readCopiedText()
-      .then((result) => {
-        mainWindow?.show();
-        mainWindow?.focus();
-        mainWindow?.webContents.send("reader:copied-text", result);
-      })
-      .catch(() => {
-        mainWindow?.webContents.send("reader:copied-text", {
-          ok: false,
-          message: "Reed could not access copied text. Use the Station to paste it instead."
-        });
-      });
+    void readCopiedText().then((result) => {
+      mainWindow?.show();
+      mainWindow?.focus();
+      mainWindow?.webContents.send("reader:copied-text", result);
+    });
   });
 
   if (!shortcutRegistered) {

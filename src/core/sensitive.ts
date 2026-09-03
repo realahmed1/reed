@@ -10,9 +10,8 @@ export function detectLikelySensitiveText(value: string): SensitiveTextKind | nu
 
   if (/^\d{6}$/.test(candidate)) {
     return "security code";
-  }
-
-  if (/^(?:sk-|gh[pous]_|github_pat_|AKIA|xox[baprs]-|eyJ)[A-Za-z0-9_\-.=]{12,}$/.test(candidate)) {
+}
+  if (/(?:sk-|gh[pous]_|github_pat_|AKIA|xox[baprs]-|eyJ)[A-Za-z0-9_\-.=]{12,}/.test(candidate)) {
     return "access token";
   }
 
@@ -24,4 +23,3 @@ export function detectLikelySensitiveText(value: string): SensitiveTextKind | nu
 
   return null;
 }
-
