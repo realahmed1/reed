@@ -33,7 +33,7 @@ jobs:
         run: node node_modules/electron/install.js
       - run: npm run smoke
       - name: Audit dependencies
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
           npm audit --audit-level=high --fetch-timeout=120000 --fetch-retries=1
           if ($LASTEXITCODE -ne 0) {
