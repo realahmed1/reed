@@ -8,6 +8,7 @@ const projectDirectory = resolve(import.meta.dirname, "..");
 const { getCurrentFuseWire, FuseV1Options } = electronFuses;
 const FUSE_DISABLED = "0".charCodeAt(0);
 const FUSE_ENABLED = "1".charCodeAt(0);
+const PACKAGED_STARTUP_TIMEOUT_MS = 20_000;
 const packageMetadata = JSON.parse(await readFile(resolve(projectDirectory, "package.json"), "utf8"));
 const outputDirectory = packageMetadata.build?.directories?.output;
 const executableName = packageMetadata.build?.win?.executableName;
@@ -64,7 +65,7 @@ try {
     const timeout = setTimeout(() => {
       timedOut = true;
       child.kill();
-    }, 20_000);
+    }, PACKAGED_STARTUP_TIMEOUT_MS);
 
     child.once("error", (error) => {
       clearTimeout(timeout);
@@ -74,7 +75,7 @@ try {
     child.once("close", (code) => {
       clearTimeout(timeout);
       if (timedOut) {
-        reject(new Error(`The packaged Reed application did not finish its startup check within 20 seconds.\n${output.trim()}`));
+        reject(new Error(`The packaged Reed application did not finish its startup check within ${Math.round(PACKAGED_STARTUP_TIMEOUT_MS / 1_000)} seconds.\n${output.trim()}`));
         return;
       }
 

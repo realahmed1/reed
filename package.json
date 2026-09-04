@@ -32,6 +32,9 @@
     "appId": "io.github.realahmed1.reed",
     "productName": "Reed",
     "copyright": "Copyright © 2026 Ismaila Ahmed",
+    "electronLanguages": [
+      "en-US"
+    ],
     "asar": true,
     "forceCodeSigning": false,
     "electronFuses": {
