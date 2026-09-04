@@ -17,12 +17,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-and-audit:
+  test-and-security:
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -33,6 +33,7 @@ jobs:
         run: node node_modules/electron/install.js
       - run: npm run smoke
       - name: Audit dependencies
+        if: github.event_name != 'pull_request'
         run: |
           npm audit --audit-level=high --fetch-timeout=120000 --fetch-retries=1
           if ($LASTEXITCODE -ne 0) {
@@ -40,13 +41,25 @@ jobs:
             npm audit --audit-level=high --fetch-timeout=120000 --fetch-retries=1
           }
 
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Review dependency changes against GitHub's advisory database
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+          fail-on-scopes: runtime, development, unknown
+
   dependency-update-check:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
