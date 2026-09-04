@@ -32,14 +32,22 @@ jobs:
       - name: Install the Electron runtime for the startup check
         run: node node_modules/electron/install.js
       - run: npm run smoke
-      - name: Audit dependencies
+      - name: Audit dependencies (retry on transient registry timeouts)
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        shell: pwsh
         run: |
-          npm audit --audit-level=high --fetch-timeout=120000 --fetch-retries=1
-          if ($LASTEXITCODE -ne 0) {
-            Write-Output "The first audit attempt failed; retrying once."
+          $maxAttempts = 3
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
             npm audit --audit-level=high --fetch-timeout=120000 --fetch-retries=1
+            if ($LASTEXITCODE -eq 0) {
+              exit 0
+            }
+            if ($attempt -lt $maxAttempts) {
+              Write-Host "npm audit failed on attempt $attempt/$maxAttempts. Retrying in 20 seconds..."
+              Start-Sleep -Seconds 20
+            }
           }
+          exit $LASTEXITCODE
 
   dependency-review:
     if: github.event_name == 'pull_request'
