@@ -2,6 +2,8 @@ name: Verify Reed
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   schedule:
     - cron: "23 14 1 * *"
@@ -10,9 +12,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: reed-verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-and-audit:
     runs-on: windows-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,11 +32,18 @@ jobs:
       - name: Install the Electron runtime for the startup check
         run: node node_modules/electron/install.js
       - run: npm run smoke
-      - run: npm audit --audit-level=high
+      - name: Audit dependencies
+        run: |
+          npm audit --audit-level=high --fetch-timeout=120000 --fetch-retries=1
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "The first audit attempt failed; retrying once."
+            npm audit --audit-level=high --fetch-timeout=120000 --fetch-retries=1
+          }
 
   dependency-update-check:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
