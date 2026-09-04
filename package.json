@@ -6,6 +6,9 @@
   "scripts": {
     "build": "node scripts/copy-static.mjs && tsc -p tsconfig.json",
     "dev": "npm run build && electron .",
+    "package:win": "npm run build && electron-builder --win nsis --publish never",
+    "package:smoke": "node scripts/package-smoke.mjs",
+    "installer:smoke": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/installer-smoke.ps1",
     "start": "electron .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "npm run build && node --test dist/tests/text.test.js",
@@ -20,9 +23,67 @@
   ],
   "author": "Ismaila Ahmed",
   "license": "MIT",
+  "homepage": "https://github.com/realahmed1/reed",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realahmed1/reed.git"
+  },
+  "build": {
+    "appId": "io.github.realahmed1.reed",
+    "productName": "Reed",
+    "copyright": "Copyright © 2026 Ismaila Ahmed",
+    "asar": true,
+    "forceCodeSigning": false,
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true,
+      "loadBrowserProcessSpecificV8Snapshot": false,
+      "grantFileProtocolExtraPrivileges": true
+    },
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/main.js",
+      "dist/preload.js",
+      "dist/core/**/*",
+      "dist/renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "Reed-Setup-${version}-${arch}.${ext}",
+      "executableName": "Reed"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Reed",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "installerLanguages": "en_US"
+    }
+  },
   "devDependencies": {
+    "@electron/fuses": "1.8.0",
     "@types/node": "^24.0.0",
     "electron": "^44.1.1",
+    "electron-builder": "26.16.0",
     "typescript": "^5.8.0"
   },
   "allowScripts": {

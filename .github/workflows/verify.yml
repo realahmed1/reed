@@ -32,6 +32,12 @@ jobs:
       - name: Install the Electron runtime for the startup check
         run: node node_modules/electron/install.js
       - run: npm run smoke
+      - name: Build the unsigned Windows installer
+        run: npm run package:win
+      - name: Launch the packaged application
+        run: npm run package:smoke
+      - name: Install, launch, and uninstall the packaged release
+        run: npm run installer:smoke
       - name: Audit dependencies (retry on transient registry timeouts)
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         shell: pwsh
