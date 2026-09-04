@@ -1,0 +1,34 @@
+{
+  "name": "reed",
+  "version": "0.1.0",
+  "description": "A private Windows-first listening and study companion.",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "node scripts/copy-static.mjs && tsc -p tsconfig.json",
+    "dev": "npm run build && electron .",
+    "start": "electron .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "npm run build && node --test dist/tests/text.test.js",
+    "smoke": "npm run build && node scripts/smoke.mjs"
+  },
+  "keywords": [
+    "accessibility",
+    "text-to-speech",
+    "study",
+    "electron",
+    "privacy"
+  ],
+  "author": "Ismaila Ahmed",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "electron": "^44.1.1",
+    "typescript": "^5.8.0"
+  },
+  "allowScripts": {
+    "electron@44.1.1": true
+  },
+  "dependencies": {
+    "wordnet": "^2.0.0"
+  }
+}
