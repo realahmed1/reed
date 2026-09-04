@@ -17,6 +17,23 @@ Reed does **not** watch the screen, silently copy selections, record audio, keep
 
 Direct selection capture from supported Windows apps and screen-region OCR are future improvements. A richer study assistant will be offered only as an explicitly enabled local-model integration; it is not bundled today.
 
+## Install on Windows
+
+1. Open the [Reed releases page](https://github.com/realahmed1/reed/releases) and choose `v0.1.0`.
+2. Download `Reed-Setup-0.1.0-x64.exe` and `SHA256SUMS.txt`.
+3. In PowerShell, verify the installer before opening it:
+
+   ```powershell
+   Get-FileHash .\Reed-Setup-0.1.0-x64.exe -Algorithm SHA256
+   ```
+
+   The result must match the value in `SHA256SUMS.txt`.
+4. Open the installer. Reed installs only for the current Windows user and does not require administrator access.
+
+Version `0.1.0` is intentionally unsigned to keep the pilot free. Windows SmartScreen may therefore show **Windows protected your PC**. Verify the checksum and confirm that the download came from `github.com/realahmed1/reed` before choosing **More info** and **Run anyway**. Do not install copies shared through another website or file-hosting service.
+
+Reed has no automatic updater. Future versions will be announced on the releases page so that each update remains an explicit user choice.
+
 ## Run locally
 
 Requirements: Node.js 24 or newer on Windows.
@@ -38,6 +55,8 @@ npm audit --audit-level=high
 ```
 
 `npm test` covers text validation, secret-shaped input refusal, sentence chunking, offline clarification, and local preference validation. `npm run smoke` launches the desktop app invisibly, confirms the secured window loads, then closes it.
+
+`npm run package:win` creates the unsigned 64-bit Windows installer. `npm run package:smoke` checks the packaged security fuses and launches the unpacked application invisibly. `npm run installer:smoke` refuses to replace an existing Reed installation, then installs, launches, and uninstalls the exact release artifact while checking its shortcuts and registration.
 
 ## Security and privacy model
 
@@ -73,6 +92,8 @@ Test with 5–10 volunteers using real course readings. Ask only for consented t
 ## GitHub safeguards
 
 Every code commit must use Ismaila Ahmed’s verified GitHub identity. The included verification workflow has read-only repository permission: it can test and report issues, but cannot commit, merge, publish, or deploy. It repeats the full verification monthly and reports when dependency updates are available. Dependabot **alerts** may be enabled, but automated version-update pull requests stay disabled so `@realahmed1` remains the sole code contributor.
+
+Release files are published manually by `@realahmed1`. The workflow builds and launches an installer during verification but does not upload it or create GitHub releases.
 
 ## Demo script
 

@@ -11,3 +11,5 @@ All notable changes to Reed will be recorded here using semantic versioning.
 - Offline WordNet clarification for selected English words and short phrases.
 - Secret-shaped input refusal and local-only preference storage.
 - Automated unit, integration, startup, and dependency-security checks.
+- Free unsigned 64-bit Windows installer with per-user installation and a published SHA-256 checksum.
+- Automated security-fuse, packaged-startup, installation, shortcut, registration, and uninstall verification before release.
