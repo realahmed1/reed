@@ -56,7 +56,7 @@ npm audit --audit-level=high
 
 `npm test` covers text validation, secret-shaped input refusal, sentence chunking, offline clarification, and local preference validation. `npm run smoke` launches the desktop app invisibly, confirms the secured window loads, then closes it.
 
-`npm run package:win` creates the unsigned 64-bit Windows installer. `npm run package:smoke` checks the packaged security fuses and launches the unpacked application invisibly. `npm run installer:smoke` refuses to replace an existing Reed installation, then installs, launches, and uninstalls the exact release artifact while checking its shortcuts and registration.
+`npm run package:win` creates the unsigned 64-bit Windows installer. `npm run package:smoke` checks the packaged security fuses, verifies that only the intended Electron language files were bundled, and launches the unpacked application invisibly. `npm run installer:smoke` refuses to replace an existing Reed installation, then installs, launches, and uninstalls the exact release artifact while checking its shortcuts and registration.
 
 ## Security and privacy model
 

@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import electronFuses from "@electron/fuses";
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
@@ -13,8 +13,16 @@ const packageMetadata = JSON.parse(await readFile(resolve(projectDirectory, "pac
 const outputDirectory = packageMetadata.build?.directories?.output;
 const executableName = packageMetadata.build?.win?.executableName;
 const configuredAppId = packageMetadata.build?.appId;
+const configuredElectronLanguages = packageMetadata.build?.electronLanguages;
 
-if (typeof outputDirectory !== "string" || typeof executableName !== "string" || typeof configuredAppId !== "string") {
+if (
+  typeof outputDirectory !== "string" ||
+  typeof executableName !== "string" ||
+  typeof configuredAppId !== "string" ||
+  !Array.isArray(configuredElectronLanguages) ||
+  configuredElectronLanguages.length === 0 ||
+  configuredElectronLanguages.some((language) => typeof language !== "string")
+) {
   throw new Error("The Windows package output metadata is incomplete.");
 }
 
@@ -26,6 +34,17 @@ if (!compiledMain.includes(JSON.stringify(configuredAppId))) {
 }
 
 await stat(executable);
+const packagedLocaleFiles = (await readdir(resolve(projectDirectory, outputDirectory, "win-unpacked", "locales")))
+  .filter((file) => file.endsWith(".pak"))
+  .sort();
+const expectedLocaleFiles = configuredElectronLanguages.map((language) => `${language}.pak`).sort();
+
+if (JSON.stringify(packagedLocaleFiles) !== JSON.stringify(expectedLocaleFiles)) {
+  throw new Error(
+    `Packaged Electron locales do not match the release policy. Expected ${expectedLocaleFiles.join(", ")}; found ${packagedLocaleFiles.join(", ")}.`
+  );
+}
+
 const fuseWire = await getCurrentFuseWire(executable);
 const expectedFuses = new Map([
   [FuseV1Options.RunAsNode, FUSE_DISABLED],
@@ -94,4 +113,4 @@ if (!output.includes("REED_SMOKE_READY")) {
   throw new Error(`The packaged Reed renderer did not report readiness.\n${output.trim()}`);
 }
 
-console.info("Packaged Reed startup and Electron fuse checks passed.");
+console.info("Packaged Reed startup, locale, and Electron fuse checks passed.");
