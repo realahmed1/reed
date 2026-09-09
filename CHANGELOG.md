@@ -2,7 +2,7 @@
 
 All notable changes to Reed will be recorded here using semantic versioning.
 
-## [0.1.0] - 2026-09-03
+## [0.1.0] - 2026-09-08
 
 ### Added
 
@@ -11,3 +11,6 @@ All notable changes to Reed will be recorded here using semantic versioning.
 - Offline WordNet clarification for selected English words and short phrases.
 - Secret-shaped input refusal and local-only preference storage.
 - Automated unit, integration, startup, and dependency-security checks.
+- Free unsigned 64-bit Windows installer with per-user installation and a published SHA-256 checksum.
+- Automated security-fuse, packaged-startup, installation, shortcut, registration, and uninstall verification before release.
+- English-only Electron runtime packaging with an automated check to prevent unnecessary installer-size regressions.

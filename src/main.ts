@@ -10,6 +10,11 @@ let mainWindow: BrowserWindow | null = null;
 let dictionaryInitialization: Promise<void> | null = null;
 let preferenceWriteQueue: Promise<void> = Promise.resolve();
 const isSmokeTest = process.env.REED_SMOKE_TEST === "1";
+const WINDOWS_APP_ID = "io.github.realahmed1.reed";
+
+if (process.platform === "win32") {
+  app.setAppUserModelId(WINDOWS_APP_ID);
+}
 
 if (isSmokeTest) {
   app.disableHardwareAcceleration();

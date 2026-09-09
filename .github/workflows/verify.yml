@@ -21,8 +21,8 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
@@ -32,6 +32,12 @@ jobs:
       - name: Install the Electron runtime for the startup check
         run: node node_modules/electron/install.js
       - run: npm run smoke
+      - name: Build the unsigned Windows installer
+        run: npm run package:win
+      - name: Launch the packaged application
+        run: npm run package:smoke
+      - name: Install, launch, and uninstall the packaged release
+        run: npm run installer:smoke
       - name: Audit dependencies (retry on transient registry timeouts)
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         shell: pwsh
@@ -54,9 +60,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Review dependency changes against GitHub's advisory database
-        uses: actions/dependency-review-action@v5
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: high
           fail-on-scopes: runtime, development, unknown
@@ -66,8 +72,8 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
