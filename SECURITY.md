@@ -14,7 +14,7 @@ Reed is intentionally local-first. It does not send reading material to a server
 
 Speech playback uses the operating system’s selected voice. Reed does not provide an upload service, but users should choose an offline-installed system voice when handling sensitive material.
 
-Production builds disable Electron’s Node runtime, `NODE_OPTIONS`, and command-line inspector fuses, and require validated application code from the packaged ASAR. The file-protocol compatibility fuse remains enabled because Reed’s isolated local renderer currently loads from `file://`; navigation, network connections, permissions, Node integration, and unexpected IPC senders remain blocked separately.
+Production builds disable Electron’s standalone Node mode (`RunAsNode`), `NODE_OPTIONS`, and command-line inspector fuses, and require validated application code from the packaged ASAR. The file-protocol compatibility fuse remains enabled because Reed’s isolated local renderer currently loads from `file://`; navigation, network connections, permissions, Node integration, and unexpected IPC senders remain blocked separately.
 
 ## Verifying downloads
 

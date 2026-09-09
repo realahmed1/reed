@@ -2,7 +2,7 @@
 
 All notable changes to Reed will be recorded here using semantic versioning.
 
-## [0.1.0] - 2026-09-04
+## [0.1.0] - 2026-09-08
 
 ### Added
 
