@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Paste a passage into Reed and listen at your own pace. A free browser read-aloud pilot with local voices, no account, and no reading history." />
+    <meta name="referrer" content="no-referrer" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; worker-src 'none'" />
+    <title>Reed — a little less reading, a little more listening</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="web-reader">
+    <main class="app-shell">
+      <header class="app-header">
+        <div><p class="eyebrow">YOUR READING, AT YOUR PACE</p><h1>Reed Station</h1></div>
+        <p class="privacy-note">Paste. Press play.<br />Keep doing your thing.</p>
+      </header>
+      <section class="reader-panel" aria-labelledby="station-heading">
+        <div class="panel-heading">
+          <div><h2 id="station-heading">What would you like to hear?</h2><p>Copy a passage from your reading and paste it below.</p></div>
+          <button class="secondary-button" id="load-sample" type="button">Try a sample</button>
+        </div>
+        <label class="sr-only" for="reader-text">Text for Reed to read aloud</label>
+        <textarea id="reader-text" rows="10" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" aria-describedby="text-help" placeholder="An article, a study note, or a passage you want to hear…"></textarea>
+        <p class="field-hint" id="text-help">No upload. No reading history. Up to 50,000 characters at a time. Never paste passwords or private access codes.</p>
+        <p class="field-hint" id="limit-notice" role="status" hidden>Only the first 50,000 characters were loaded. Paste the remainder separately when you finish.</p>
+        <div class="reader-actions">
+          <button class="primary-button" id="start-reading" type="button">Listen</button>
+          <button class="quiet-button" id="pause-reading" type="button" disabled>Pause</button>
+          <button class="quiet-button" id="stop-reading" type="button" disabled>Stop</button>
+          <button class="quiet-button" id="repeat-sentence" type="button" disabled>Repeat sentence</button>
+          <button class="quiet-button" id="clear-station" type="button">Clear</button>
+        </div>
+        <p class="status" id="reader-status" role="status" aria-live="polite">Ready when you are. Paste text or try the sample.</p>
+        <progress id="reading-progress" max="1" value="0" aria-label="Reading progress"></progress>
+      </section>
+      <section class="controls-panel" aria-labelledby="controls-heading">
+        <div><p class="eyebrow">MAKE IT YOURS</p><h2 id="controls-heading">Voice &amp; pace</h2><p class="field-hint">Keep this tab open while listening.<br />Sleep or browser suspension can interrupt playback.</p></div>
+        <div class="control-grid">
+          <label for="speed">Speed <output id="speed-value">1.0×</output></label>
+          <input id="speed" type="range" min="0.6" max="2" value="1" step="0.1" />
+          <label for="voice">Local voice</label>
+          <select id="voice" aria-describedby="voice-status"><option value="">Finding local voices…</option></select>
+          <p class="field-hint" id="voice-status" role="status">Checking the voices available in your browser…</p>
+          <button class="quiet-button" id="refresh-voices" type="button">Check voices again</button>
+        </div>
+      </section>
+      <aside class="privacy-panel" aria-label="Privacy and pilot information">
+        <strong>Your reading stays in this session.</strong>
+        <p>Reed stores only your voice and speed preferences on this device. It uses voices your browser reports as local, with no fallback to an online voice.</p>
+        <details><summary>About this browser pilot</summary><p>No sign-in, analytics, AI requests, or automatic clipboard access. Copy and paste is deliberate. Word definitions remain in the Windows app for now.</p><p>Clear removes the passage from the Station and stops playback. Browser extensions, operating-system features, and browser session restoration are outside Reed’s control. When hosted on GitHub Pages, GitHub logs visitor IP addresses for security; Reed does not receive a reading history.</p><p>Mac Safari and Chrome listening and background behavior still need real-device pilot testing. Automated browser checks do not verify audible voice quality.</p></details>
+      </aside>
+      <footer><span>Reed Web · early pilot</span><a href="https://github.com/realahmed1/reed" target="_blank" rel="noopener noreferrer">Source &amp; feedback on GitHub</a></footer>
+      <noscript>Reed needs JavaScript for speech playback. Enable it for this page to use the Station.</noscript>
+    </main>
+    <script src="browser.js" defer></script>
+  </body>
+</html>

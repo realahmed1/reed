@@ -7,3 +7,5 @@ release/
 !.env.example
 *.log
 .gstack/
+playwright-report/
+test-results/

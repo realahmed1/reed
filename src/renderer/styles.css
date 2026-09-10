@@ -100,3 +100,16 @@ kbd { background: #e9efe9; border: 1px solid #c4d1c5; border-radius: 4px; font-s
 @media (prefers-contrast: more) {
   .reader-panel, .controls-panel, .clarify-panel, textarea { border: 2px solid currentColor; }
 }
+
+[hidden] { display: none !important; }
+.field-hint { font-size: 0.88rem; color: #516056; margin: 8px 0 0; }
+select { max-width: 100%; min-width: 0; padding: 8px; border: 1px solid #b8c8bb; border-radius: 8px; background: white; color: #202721; }
+.web-reader .control-grid { width: 350px; max-width: 100%; min-width: 0; }
+.web-reader .reader-actions { gap: 10px; }
+.web-reader .primary-button { min-width: 120px; }
+.web-reader .privacy-panel p { margin: 8px 0 16px; }
+progress { width: 100%; height: 7px; accent-color: #1f6747; margin-top: 14px; }
+summary { cursor: pointer; font-weight: 600; }
+summary:focus-visible, a:focus-visible { outline: 3px solid #377c5b; outline-offset: 3px; }
+footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 24px 4px 0; color: #516056; font-size: 0.85rem; }
+a { color: #1f6747; text-underline-offset: 3px; }

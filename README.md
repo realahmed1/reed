@@ -4,6 +4,8 @@ Reed is a private, Windows-first listening companion for students who want to he
 
 ## What works today
 
+The published `v0.1.0` installer is Windows-only. The [Reed browser pilot](https://realahmed1.github.io/reed/) lets Mac users try paste-and-listen without installing an unsigned app. It uses only voices reported as local by the browser. Real Mac audible and background-playback checks are still pending.
+
 - Paste text into **Reed Station** and listen with system voices.
 - Copy text from another app, then press `Ctrl + Shift + R` to load it into Reed.
 - Pause, resume, stop, repeat the current sentence, and change playback speed.
@@ -45,6 +47,24 @@ npm run dev
 
 To use another app’s text: select it, copy it with `Ctrl + C`, then press `Ctrl + Shift + R`. Reed opens with that copied text. If the shortcut is already used by another program, use **Read copied text** inside Reed Station instead.
 
+## Browser pilot (local preview)
+
+With Node.js 24 installed, run:
+
+```sh
+npm ci --ignore-scripts
+npm run build:web
+npm run preview:web
+```
+
+Open `http://127.0.0.1:4173/reed/` on the same computer. The preview binds only to this computer, not the local network. It serves a snapshot of the build: rebuild and restart the preview after changes.
+
+Paste a passage or choose **Try a sample**, then **Listen**. Pause/resume, stop, repeat, speed, progress, and clear are available. Keep the tab open; sleep, tab closure, and browser suspension may interrupt speech.
+
+Only voices with the browser's `localService` flag are offered. If none appear, check installed system voices or try another browser, then use **Check voices again**. Reed never silently selects a remote voice. This flag is a browser/OS report, not independent proof of the voice provider's implementation.
+
+The pilot has no login, server API, analytics, document upload, screen access, automatic clipboard import, or dictionary/AI explanations. Only voice and speed preferences are stored. Browser extensions, operating-system services, and browser session restoration are outside Reed's control. See [browser testing and pilot instructions](docs/BROWSER_PILOT.md).
+
 ## Checks
 
 ```powershell
@@ -54,7 +74,9 @@ npm run smoke
 npm audit --audit-level=high
 ```
 
-`npm test` covers text validation, secret-shaped input refusal, sentence chunking, offline clarification, and local preference validation. `npm run smoke` launches the desktop app invisibly, confirms the secured window loads, then closes it.
+`npm test` covers text validation, secret-shaped input refusal, sentence chunking, offline clarification, preferences, the shared playback state machine, and browser service privacy/failure cases. `npm run smoke` launches the desktop app invisibly, confirms the secured window loads, then closes it.
+
+`npm run test:web` builds the static page and runs browser regression tests with synthetic text and mocked speech. Install the matching test browsers with `npx playwright install chromium webkit` first. On a machine that already has a compatible Chromium, set `REED_TEST_CHROMIUM_PATH` to its executable to run only that local Chromium, without another download. Chromium/WebKit automated results do **not** establish real Safari, Mac audio, background, or assistive-technology compatibility.
 
 `npm run package:win` creates the unsigned 64-bit Windows installer. `npm run package:smoke` checks the packaged security fuses, verifies that only the intended Electron language files were bundled, and launches the unpacked application invisibly. `npm run installer:smoke` refuses to replace an existing Reed installation, then installs, launches, and uninstalls the exact release artifact while checking its shortcuts and registration.
 
@@ -71,6 +93,8 @@ Reed itself has no upload service. Speech synthesis is provided by the selected 
 Clipboard text has no trustworthy source metadata, so Reed cannot prove that it did not come from a secure field. The secret-shape guard is a safeguard, not a replacement for user judgment: never copy passwords, recovery codes, financial data, or private credentials into Reed.
 
 ## Architecture
+
+The browser and desktop share the same DOM-free playback controller and reader interface. Small platform adapters supply text preparation and preference storage; desktop-only clipboard and WordNet access stay behind Electron's validated bridge. The browser bundle has no runtime npm dependencies, rejects imports outside the approved shared-source boundary, and enforces a 100 KB JavaScript budget. esbuild bundles the existing TypeScript without a UI framework or backend.
 
 ```text
 Windows clipboard / pasted text
@@ -92,6 +116,8 @@ Test with 5–10 volunteers using real course readings. Ask only for consented t
 ## GitHub safeguards
 
 Every code commit must use Ismaila Ahmed’s verified GitHub identity. The included verification workflow has read-only repository permission: it can test and report issues, but cannot commit, merge, publish, or deploy. It repeats the full verification monthly and reports when dependency updates are available. Dependabot **alerts** may be enabled, but automated version-update pull requests stay disabled so `@realahmed1` remains the sole code contributor.
+
+Verification includes Chromium and WebKit browser regression checks alongside the Windows installer checks. A failed check or dependency report requires a reviewed fix; there are no automatic commits or website updates. GitHub Pages hosts this public browser pilot for free; GitHub records visitor IP addresses for security. Website updates require separate approval and a manual **Publish Reed Web** run by `realahmed1`, naming an exact `main` commit whose verification passed. Only the deployment job has Pages publication permissions; it cannot commit source changes. See [publication and rollback instructions](docs/BROWSER_PILOT.md#publication-and-rollback).
 
 Release files are published manually by `@realahmed1`. The workflow builds and launches an installer during verification but does not upload it or create GitHub releases.
 

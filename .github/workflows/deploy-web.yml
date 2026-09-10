@@ -1,0 +1,90 @@
+name: Publish Reed Web
+run-name: Publish Reed Web ${{ inputs.source_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Full main commit SHA with a successful Verify Reed push run
+        required: true
+        type: string
+      confirmation:
+        description: Type PUBLISH after reviewing the exact commit and public-hosting implications
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reed-web-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Validate the owner-approved main commit
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REPOSITORY" != "realahmed1/reed" || "$GITHUB_REF" != "refs/heads/main" || "$GITHUB_ACTOR" != "realahmed1" || "$GITHUB_TRIGGERING_ACTOR" != "realahmed1" ]]; then
+            echo 'Publication is restricted to the owner and the main branch.' >&2
+            exit 1
+          fi
+          if [[ "$CONFIRMATION" != "PUBLISH" || ! "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ || "$SOURCE_SHA" != "$GITHUB_SHA" ]]; then
+            echo 'Confirm PUBLISH and supply the exact current main commit SHA.' >&2
+            exit 1
+          fi
+      - name: Require successful verification of this exact commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          conclusion=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/verify.yml/runs?head_sha=$GITHUB_SHA&branch=main&event=push&per_page=5" --jq '.workflow_runs[0].conclusion')
+          if [[ "$conclusion" != "success" ]]; then
+            echo 'Wait for the Verify Reed push run on this commit to pass before publishing.' >&2
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm audit --audit-level=high
+      - run: npm run build:web
+      - name: Upload only the validated static website
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: out/web
+          include-hidden-files: true
+          retention-days: 1
+
+  deploy:
+    needs: build
+    # Recheck on this job: rerunning only failed deployment jobs skips build guards.
+    if: github.repository == 'realahmed1/reed' && github.ref == 'refs/heads/main' && github.actor == 'realahmed1' && github.triggering_actor == 'realahmed1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish the approved artifact
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
