@@ -44,6 +44,10 @@ export function initializeReader(services: ReaderServices): void {
   let preferenceWrites: Promise<unknown> = Promise.resolve();
   const setStatus = (message: string) => { status.textContent = message; };
 
+  const voiceKey = (item: SpeechSynthesisVoice): string => item.voiceURI || item.name;
+  const findVoice = (available: SpeechSynthesisVoice[], selectedValue: string): SpeechSynthesisVoice | undefined =>
+    available.find(item => voiceKey(item) === selectedValue) || available.find(item => item.name === selectedValue);
+
   function voices(): SpeechSynthesisVoice[] {
     if (!supported) return [];
     try {
@@ -56,9 +60,10 @@ export function initializeReader(services: ReaderServices): void {
     const available = voices();
     voice.replaceChildren();
     if (!services.capabilities.localVoicesOnly) voice.add(new Option("System default", ""));
-    for (const item of available) voice.add(new Option(`${item.name} (${item.lang})`, item.name));
-    if (available.some(item => item.name === wanted)) voice.value = wanted;
-    else if (services.capabilities.localVoicesOnly && available.length) voice.value = (available.find(item => item.default) || available[0]).name;
+    for (const item of available) voice.add(new Option(`${item.name} (${item.lang})`, voiceKey(item)));
+    const matched = findVoice(available, wanted);
+    if (matched) voice.value = voiceKey(matched);
+    else if (services.capabilities.localVoicesOnly && available.length) voice.value = voiceKey(available.find(item => item.default) || available[0]);
     if (services.capabilities.localVoicesOnly && !available.length) voice.add(new Option("No local voice available", ""));
     voice.disabled = !supported || (services.capabilities.localVoicesOnly && !available.length);
     start.disabled = !supported;
@@ -89,7 +94,7 @@ export function initializeReader(services: ReaderServices): void {
   const playback = new PlaybackController({
     speak(value, callbacks) {
       if (!supported) throw new Error("Speech unavailable");
-      const selected = voices().find(item => item.name === voice.value);
+      const selected = voices().find(item => voiceKey(item) === voice.value);
       // Never let the browser silently fall back to a potentially remote default.
       if (services.capabilities.localVoicesOnly && !selected) throw new Error("Local voice unavailable");
       const utterance = new SpeechSynthesisUtterance(value);
@@ -147,7 +152,7 @@ export function initializeReader(services: ReaderServices): void {
       if (!result.ok) { playback.clear(); setStatus(result.message); return; }
       text.value = result.text;
       showLimit(result);
-      if (services.capabilities.localVoicesOnly && !voices().some(item => item.name === voice.value)) {
+      if (services.capabilities.localVoicesOnly && !voices().some(item => voiceKey(item) === voice.value)) {
         playback.clear();
         populateVoices();
         if (!voice.value) { setStatus("No local voice available. Check the voice guidance below, then try again."); return; }

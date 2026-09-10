@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 
 const FIRST_VOICE = "Reed Test Local One";
 const SECOND_VOICE = "Reed Test Local Two";
+const FIRST_VOICE_URI = "reed-test-local-one";
+const SECOND_VOICE_URI = "reed-test-local-two";
 const REMOTE_VOICE = "Reed Test Online";
 
 /**
@@ -21,9 +23,10 @@ async function openReader(page, options = {}) {
     }
     if (options.preferences) localStorage.setItem("reed.browser.preferences.v1", JSON.stringify(options.preferences));
 
+    const duplicateName = "Reed Test Duplicate";
     const localVoices = [
-      { name: firstVoice, voiceURI: "reed-test-local-one", lang: "en-US", default: true, localService: true },
-      { name: secondVoice, voiceURI: "reed-test-local-two", lang: "en-US", default: false, localService: true }
+      { name: options.duplicateVoiceNames ? duplicateName : firstVoice, voiceURI: "reed-test-local-one", lang: "en-US", default: true, localService: true },
+      { name: options.duplicateVoiceNames ? duplicateName : secondVoice, voiceURI: "reed-test-local-two", lang: "en-US", default: false, localService: true }
     ];
     const remote = { name: remoteVoice, voiceURI: "reed-test-online", lang: "en-US", default: false, localService: false };
     const voicesFor = mode => mode === "none" ? [] : mode === "remote-only" ? [remote] : mode === "first-local" ? [localVoices[0]] : [...localVoices, remote];
@@ -57,7 +60,7 @@ async function openReader(page, options = {}) {
       getVoices: () => [...available],
       speak(utterance) {
         const index = state.calls.length;
-        state.calls.push({ text: utterance.text, rate: utterance.rate, voiceName: utterance.voice?.name,
+        state.calls.push({ text: utterance.text, rate: utterance.rate, voiceName: utterance.voice?.name, voiceURI: utterance.voice?.voiceURI,
           localService: utterance.voice?.localService, utterance });
         state.active.add(index);
         state.maxActive = Math.max(state.maxActive, state.active.size);
@@ -86,7 +89,7 @@ async function openReader(page, options = {}) {
 }
 
 async function calls(page) {
-  return page.evaluate(() => window.__reedSpeech.calls.map(({ text, rate, voiceName, localService }) => ({ text, rate, voiceName, localService })));
+  return page.evaluate(() => window.__reedSpeech.calls.map(({ text, rate, voiceName, voiceURI, localService }) => ({ text, rate, voiceName, voiceURI, localService })));
 }
 
 async function startPassage(page, passage = "First practice sentence. Second practice sentence.") {
@@ -170,12 +173,20 @@ test("only local voices are offered and selected voice and rate apply to each ne
   await openReader(page);
   await expect(page.locator("#voice option")).toHaveText([`${FIRST_VOICE} (en-US)`, `${SECOND_VOICE} (en-US)`]);
   await startPassage(page);
-  await page.locator("#voice").selectOption(SECOND_VOICE);
+  await page.locator("#voice").selectOption(SECOND_VOICE_URI);
   await page.locator("#speed").fill("1.4");
   await page.locator("#speed").dispatchEvent("change");
   await page.evaluate(() => window.__reedSpeech.finish(0));
   expect((await calls(page))[1]).toMatchObject({ rate: 1.4, voiceName: SECOND_VOICE, localService: true });
   expect((await calls(page)).every(call => call.voiceName !== REMOTE_VOICE)).toBe(true);
+});
+
+test("voices with the same display name stay selectable by unique identifiers", async ({ page }) => {
+  await openReader(page, { duplicateVoiceNames: true });
+  await page.locator("#voice").selectOption(SECOND_VOICE_URI);
+  await startPassage(page);
+  expect((await calls(page))[0]).toMatchObject({ voiceURI: SECOND_VOICE_URI });
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("reed.browser.preferences.v1")).voiceName)).toBe(SECOND_VOICE_URI);
 });
 
 test("a local voice disappearing between parts cannot trigger an online fallback", async ({ page }) => {
@@ -220,7 +231,7 @@ test("missing speech APIs leave a usable text area and clear guidance", async ({
 
 test("only voice and speed preferences survive reload, never the passage", async ({ page }) => {
   await openReader(page);
-  await page.locator("#voice").selectOption(SECOND_VOICE);
+  await page.locator("#voice").selectOption(SECOND_VOICE_URI);
   await page.locator("#speed").fill("1.6");
   await page.locator("#speed").dispatchEvent("change");
   await page.locator("#reader-text").fill("A synthetic passage that must not be saved.");
@@ -229,36 +240,36 @@ test("only voice and speed preferences survive reload, never the passage", async
   }))).toBe(true);
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-reed-ready", "true");
-  await expect(page.locator("#voice")).toHaveValue(SECOND_VOICE);
+  await expect(page.locator("#voice")).toHaveValue(SECOND_VOICE_URI);
   await expect(page.locator("#speed")).toHaveValue("1.6");
   await expect(page.locator("#reader-text")).toHaveValue("");
   await expect(page.locator("#pause-reading")).toBeDisabled();
 });
 
 test("a saved local voice is restored when its delayed voice list arrives", async ({ page }) => {
-  await openReader(page, { voices: "first-local", preferences: { voiceName: SECOND_VOICE, playbackRate: 1 } });
-  await expect(page.locator("#voice")).toHaveValue(FIRST_VOICE);
+  await openReader(page, { voices: "first-local", preferences: { voiceName: SECOND_VOICE_URI, playbackRate: 1 } });
+  await expect(page.locator("#voice")).toHaveValue(FIRST_VOICE_URI);
   await page.evaluate(() => window.__reedSpeech.setVoices("local"));
-  await expect(page.locator("#voice")).toHaveValue(SECOND_VOICE);
+  await expect(page.locator("#voice")).toHaveValue(SECOND_VOICE_URI);
 });
 
 test("an explicit voice choice wins over a saved voice that arrives later", async ({ page }) => {
-  await openReader(page, { voices: "first-local", preferences: { voiceName: SECOND_VOICE, playbackRate: 1 } });
-  await page.locator("#voice").selectOption(FIRST_VOICE);
+  await openReader(page, { voices: "first-local", preferences: { voiceName: SECOND_VOICE_URI, playbackRate: 1 } });
+  await page.locator("#voice").selectOption(FIRST_VOICE_URI);
   await page.evaluate(() => window.__reedSpeech.setVoices("local"));
-  await expect(page.locator("#voice")).toHaveValue(FIRST_VOICE);
+  await expect(page.locator("#voice")).toHaveValue(FIRST_VOICE_URI);
   await startPassage(page);
   expect((await calls(page))[0].voiceName).toBe(FIRST_VOICE);
 });
 
 test("changing speed while waiting for a saved voice does not overwrite that voice", async ({ page }) => {
-  await openReader(page, { voices: "first-local", preferences: { voiceName: SECOND_VOICE, playbackRate: 1 } });
+  await openReader(page, { voices: "first-local", preferences: { voiceName: SECOND_VOICE_URI, playbackRate: 1 } });
   await page.locator("#speed").fill("1.5");
   await page.locator("#speed").dispatchEvent("change");
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("reed.browser.preferences.v1")).playbackRate)).toBe(1.5);
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("reed.browser.preferences.v1")).voiceName)).toBe(SECOND_VOICE);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("reed.browser.preferences.v1")).voiceName)).toBe(SECOND_VOICE_URI);
   await page.evaluate(() => window.__reedSpeech.setVoices("local"));
-  await expect(page.locator("#voice")).toHaveValue(SECOND_VOICE);
+  await expect(page.locator("#voice")).toHaveValue(SECOND_VOICE_URI);
   await expect(page.locator("#speed")).toHaveValue("1.5");
 });
 
@@ -286,7 +297,7 @@ test("reading text never enters requests, URLs, console output, or storage", asy
   const passage = "Reed privacy canary amber meadow. This is synthetic reading material.";
   await startPassage(page, passage);
   await page.locator("#pause-reading").click();
-  await page.locator("#voice").selectOption(SECOND_VOICE);
+  await page.locator("#voice").selectOption(SECOND_VOICE_URI);
   await page.locator("#stop-reading").click();
   const stored = await page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage } }));
   const captured = JSON.stringify({ requests, messages, stored, url: page.url() });
