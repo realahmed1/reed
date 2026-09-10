@@ -4,14 +4,17 @@
   "description": "A private Windows-first listening and study companion.",
   "main": "dist/main.js",
   "scripts": {
-    "build": "node scripts/copy-static.mjs && tsc -p tsconfig.json",
+    "build": "node scripts/copy-static.mjs && tsc -p tsconfig.json && node scripts/build-renderer.mjs",
+    "build:web": "node scripts/build-renderer.mjs --web",
+    "preview:web": "node scripts/serve-web.mjs",
     "dev": "npm run build && electron .",
     "package:win": "npm run build && electron-builder --win nsis --publish never",
     "package:smoke": "node scripts/package-smoke.mjs",
     "installer:smoke": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/installer-smoke.ps1",
     "start": "electron .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "npm run build && node --test dist/tests/text.test.js",
+    "test": "npm run build && node --test dist/tests/*.test.js",
+    "test:web": "npm run build && npm run build:web && playwright test",
     "smoke": "npm run build && node scripts/smoke.mjs"
   },
   "keywords": [
@@ -84,9 +87,11 @@
   },
   "devDependencies": {
     "@electron/fuses": "1.8.0",
+    "@playwright/test": "1.63.0",
     "@types/node": "^24.0.0",
     "electron": "^44.1.1",
     "electron-builder": "26.16.0",
+    "esbuild": "0.28.2",
     "typescript": "^5.8.0"
   },
   "allowScripts": {
