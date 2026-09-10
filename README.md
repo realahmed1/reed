@@ -4,7 +4,7 @@ Reed is a private, Windows-first listening companion for students who want to he
 
 ## What works today
 
-The published `v0.1.0` installer is Windows-only. The browser pilot in this branch is **not yet hosted**; it is intended to let Mac users test Reed without installing an unsigned app. Real Mac audible and background-playback checks are still pending.
+The published `v0.1.0` installer is Windows-only. The [Reed browser pilot](https://realahmed1.github.io/reed/) lets Mac users try paste-and-listen without installing an unsigned app. It uses only voices reported as local by the browser. Real Mac audible and background-playback checks are still pending.
 
 - Paste text into **Reed Station** and listen with system voices.
 - Copy text from another app, then press `Ctrl + Shift + R` to load it into Reed.
@@ -117,7 +117,7 @@ Test with 5–10 volunteers using real course readings. Ask only for consented t
 
 Every code commit must use Ismaila Ahmed’s verified GitHub identity. The included verification workflow has read-only repository permission: it can test and report issues, but cannot commit, merge, publish, or deploy. It repeats the full verification monthly and reports when dependency updates are available. Dependabot **alerts** may be enabled, but automated version-update pull requests stay disabled so `@realahmed1` remains the sole code contributor.
 
-Verification includes Chromium and WebKit browser regression checks alongside the Windows installer checks. A failed check or dependency report requires a reviewed fix; there are no automatic commits or website updates. Website publication needs separate approval. GitHub Pages is the proposed free host for this public repository; GitHub records visitor IP addresses for security. No Pages deployment workflow is enabled in this branch.
+Verification includes Chromium and WebKit browser regression checks alongside the Windows installer checks. A failed check or dependency report requires a reviewed fix; there are no automatic commits or website updates. GitHub Pages hosts this public browser pilot for free; GitHub records visitor IP addresses for security. Website updates require separate approval and a manual **Publish Reed Web** run by `realahmed1`, naming an exact `main` commit whose verification passed. Only the deployment job has Pages publication permissions; it cannot commit source changes. See [publication and rollback instructions](docs/BROWSER_PILOT.md#publication-and-rollback).
 
 Release files are published manually by `@realahmed1`. The workflow builds and launches an installer during verification but does not upload it or create GitHub releases.
 

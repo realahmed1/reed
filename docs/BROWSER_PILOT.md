@@ -1,6 +1,6 @@
 # Reed browser pilot
 
-Status: implemented for local testing; **not published**. The existing Windows v0.1.0 release is unchanged. No claim of completed Mac or human pilot testing is made.
+Public pilot: [Reed Web](https://realahmed1.github.io/reed/). The owner approved first publication on 2026-09-10. Consult the [publishing workflow runs](https://github.com/realahmed1/reed/actions/workflows/deploy-web.yml) for the exact published commit and deployment status. The existing Windows v0.1.0 release is unchanged. No claim of completed Mac or human pilot testing is made.
 
 ## Product boundary
 
@@ -34,11 +34,17 @@ Ask 3–5 volunteers with Safari and/or Chrome on their actual Macs. Record brow
 
 Outcome to measure: **number of consenting testers who paste a passage, hear it, pause/resume, and clear it without assistance / total testers who attempted that task**. Start with no observations; never substitute automated passes for users. Also collect a short usefulness comment and the most disruptive issue. Avoid course text, account details, screenshots of private content, recordings, or diagnostic reading logs.
 
-## Hosting approval gate
+## Publication and rollback
 
-Proposed target: GitHub Pages for `realahmed1/reed`, serving only the four files in `out/web`: `index.html`, `styles.css`, `browser.js`, and `.nojekyll`. Build checks refuse unfamiliar output files. There is no API server or secret configuration to deploy.
+Approved target: GitHub Pages for `realahmed1/reed`, serving only the four files in `out/web`: `index.html`, `styles.css`, `browser.js`, and `.nojekyll`. Build checks refuse unfamiliar output files. There is no API server or secret configuration to deploy.
 
-Before going live, show the owner the precise target, successful checks, unresolved Mac testing limits, and public-hosting implications. Request a separate explicit approval. Only then configure a protected/manual Pages publication workflow, using immutable action revisions and narrowly scoped publishing permissions. Do not add a bot author, co-author, collaborator, or generated-code commit.
+For every later update, show the owner the precise commit, successful checks, unresolved testing limits, and public-hosting implications. Request explicit publication approval. Never add a bot author, co-author, collaborator, or generated-code commit.
+
+The workflow is manual-only. It requires both the initiating and rerunning actor to be `realahmed1`, the branch to be `main`, an exact 40-character source SHA matching the workflow commit, and the literal confirmation `PUBLISH`. It fails unless the latest **Verify Reed** push run for that exact commit passed. A fresh dependency audit and allowlisted static build run before upload. There is no arbitrary ref input, no source-write token, and no automatic publication on push.
+
+After approval and green main checks, the owner opens **Actions → Publish Reed Web → Run workflow**, selects `main`, supplies its full verified commit SHA, and enters `PUBLISH`. The `github-pages` environment permits only the `main` branch. The build job has read-only repository/Actions access. Only the final job receives `pages: write` and `id-token: write`. All actions use immutable commit pins. An invalid branch, actor, SHA, confirmation, or verification state fails before upload.
+
+For rollback, do not force-push or silently redeploy an old artifact. Obtain owner approval, revert the problematic source change through a reviewed commit/PR, let the new `main` revision pass verification, then manually publish that revision. Reverting source alone does not change the live site. If the first publication has no previous healthy version and must be taken down, obtain approval to unpublish Pages instead.
 
 Once published, verify the actual `/reed/` URL, relative assets, HTTPS, CSP, local voices, no unexpected network requests, and one synthetic end-to-end reading. Record the exact source commit and actual URL. Do not publish the desktop release folder or tests.
 
