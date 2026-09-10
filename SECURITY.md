@@ -14,6 +14,12 @@ Reed is intentionally local-first. It does not send reading material to a server
 
 Speech playback uses the operating system’s selected voice. Reed does not provide an upload service, but users should choose an offline-installed system voice when handling sensitive material.
 
+The browser pilot permits only voices explicitly reported as local (`localService === true`) and rechecks the selected voice before each spoken part. It stops with guidance if the local voice becomes unavailable; it does not fall back to a remote voice. This is an API-level safeguard, not independent verification of browser/OS internals.
+
+Browser reading text is neither sent in application requests nor stored in browser storage, URL parameters, or analytics. Only allowlisted voice/speed preferences are persisted, and denied or corrupted storage does not block listening. The static page's Content Security Policy blocks connection requests, inline scripts, object content, workers, and form submissions. Reed disables textarea spellchecking/autocomplete requests; extensions, browser restoration, OS features, and the hosting provider remain outside its control. Clear stops speech and releases the active reading queue; it does not promise forensic erasure from device memory.
+
+GitHub Pages is a proposed host, not yet enabled by this browser build. A public website exposes its static application code and GitHub logs visitor IP addresses for security. Website publication and changes to this privacy model require explicit approval; no workflow can publish or modify code automatically.
+
 Production builds disable Electron’s standalone Node mode (`RunAsNode`), `NODE_OPTIONS`, and command-line inspector fuses, and require validated application code from the packaged ASAR. The file-protocol compatibility fuse remains enabled because Reed’s isolated local renderer currently loads from `file://`; navigation, network connections, permissions, Node integration, and unexpected IPC senders remain blocked separately.
 
 ## Verifying downloads
